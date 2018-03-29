@@ -104,6 +104,7 @@ from pre_processing import my_PreProc
 
 def get_list_files(imgs_dir):
     list_files = [f for f in listdir(imgs_dir) if isfile(join(imgs_dir, f))]
+    list_files.remove(".gitignore")
     return list_files
 
 # def get_datasets(imgs_dir):

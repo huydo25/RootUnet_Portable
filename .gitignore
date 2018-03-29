@@ -1,1 +1,6 @@
+#my directory
 my_input
+
+##python cache
+#*.pyc
+#*__pycache__
