@@ -6,6 +6,8 @@
 
 
 import numpy as np
+np.seterr(divide='ignore', invalid='ignore')
+
 from PIL import Image
 import cv2
 
@@ -81,12 +83,13 @@ def dataset_normalized(imgs):
     imgs_normalized = np.empty(imgs.shape)
     imgs_std = np.std(imgs)
     imgs_mean = np.mean(imgs)
-#     print("imgs_std:")
-#     print(imgs_std)
+    # print("imgs_std:")
+    # print(imgs_std)
 #     print("imgs_mean:")
 #     print(imgs_mean)
 #     print("imgs:")
 #     print(imgs.shape)
+    assert(imgs_std != 0)
     imgs_normalized = (imgs-imgs_mean)/imgs_std
 #     imgs_normalized = imgs
 #     print("Passed!")

@@ -26,21 +26,13 @@ import os, sys
 from os.path import isfile, join
 import numpy as np
 from PIL import Image
+import time
+import sys
+import warnings
 
-# os.chdir("/content/")
-# !ls
-# !mkdir -p drive
-# !google-drive-ocamlfuse drive
-# !pip install -q keras
-# !pip install -q opencv-python
-# !apt install -y libsm6 libxext6
-# !pip install -q keras
+if not sys.warnoptions:
+    warnings.simplefilter("ignore")
 
-# os.chdir("/content/drive/Colab/Portable/")
-# print ( "Back to current dir:")
-# !ls
-
-"""#1. Prepare data"""
 
 PATH_INPUT = "input/"
 PATH_OUTPUT = "output/"
@@ -54,8 +46,8 @@ channels = 3
 # height = 1860
 # width = 1328
 
-height = 2336
-width = 1696
+# height = 2336
+# width = 1696
 
 
 # dimension of the patches
@@ -93,7 +85,7 @@ sys.path.insert(0, './lib/')
 from help_functions import rgb2gray, group_images, visualize, masks_Unet, pred_to_imgs
 
 # extract_patches.py
-from extract_patches import recompone
+# from extract_patches import recompone
 from extract_patches import recompone_overlap
 from extract_patches import paint_border
 from extract_patches import paint_border_overlap
@@ -110,28 +102,49 @@ from pre_processing import my_PreProc
 #     with h5py.File(outfile,"w") as f:
 #         f.create_dataset("image", data=arr, dtype=arr.dtype)
 
-def get_datasets(imgs_dir):
+def get_list_files(imgs_dir):
+    list_files = [f for f in listdir(imgs_dir) if isfile(join(imgs_dir, f))]
+    return list_files
+
+# def get_datasets(imgs_dir):
     
-    Nimgs = len([f for f in listdir(imgs_dir) if isfile(join(imgs_dir, f))])
-    imgs = np.empty((Nimgs,height,width,channels))
-    for path, subdirs, files in os.walk(imgs_dir): #list all files, directories in the path
-        for i in range(len(files)):
-            print ( ("image: " +files[i]))
+#     Nimgs = len([f for f in listdir(imgs_dir) if isfile(join(imgs_dir, f))])
+#     imgs = np.empty((Nimgs,height,width,channels))
+#     for path, subdirs, files in os.walk(imgs_dir): #list all files, directories in the path
+#         for i in range(len(files)):
+#             print ( ("image: " +files[i]))
             
-            ### write some lines of code to:
-            ### - check if image's size is different to requirement, then resize and save to output folder
-            ### - else: make a copy to output folder
+#             ### write some lines of code to:
+#             ### - check if image's size is different to requirement, then resize and save to output folder
+#             ### - else: make a copy to output folder
             
-            img = Image.open(imgs_dir+files[i])
-            imgs[i] = np.asarray(img)    
-    imgs = np.transpose(imgs,(0,3,1,2))
-    assert(imgs.shape == (Nimgs,channels,height,width))
-    return imgs, files
+#             img = Image.open(imgs_dir+files[i])
+#             imgs[i] = np.asarray(img)    
+#     imgs = np.transpose(imgs,(0,3,1,2))
+#     assert(imgs.shape == (Nimgs,channels,height,width))
+#     return imgs, files
+
+def get_image(path_image):
+    ### load image
+    img = Image.open(path_image)
+    img_array = np.asarray(img)
+    # print("STD load: " + str(np.std(img_array)))
+    height, width, channels = img_array.shape
+
+    ### add image to 4d matrix
+    Nimgs = 1 # this matrix contains only 1 image
+    img_4d = np.empty((Nimgs,height,width,channels))
+    img_4d[0] = img_array
+    img_4d = np.transpose(img_4d,(0,3,1,2))
+    assert(img_4d.shape == (Nimgs,channels,height,width))
+    
+    # print("STD img_4d: " + str(np.std(img_4d)))
+    return img_4d
 
 def get_data(imgs_test, patch_height, patch_width, stride_height, stride_width):
     test_imgs_original = imgs_test
     test_imgs = my_PreProc(test_imgs_original)
-    test_imgs = test_imgs[:,:,:,:]
+    # test_imgs = test_imgs[:,:,:,:]
     test_imgs = paint_border_overlap(test_imgs, patch_height, patch_width, stride_height, stride_width)
 
 #     print ( "\ntest images shape:")
@@ -153,69 +166,72 @@ def createDir(directory):
     else:
         print ( directory + " already exists")
 
-"""#2. Predictions"""
+def predict_and_save(list_input_images, model):    
+    print("-------------------------------------")
+    print("Found " + str(len(list_input_images)) + " images in directory " + PATH_INPUT + "\n")
+    print("It should take minutes per image, depending on your CPU capacity. You can go out and come back later ;)\n")
 
-#load testing datasets
-imgs_test, file_names = get_datasets(original_imgs_test)
-print ( ("test datasets loaded"))
-print ((imgs_test.shape))
-# write_hdf5(imgs_test,dataset_path + temp_file)
+    for input_image in list_input_images:
+        start_time_image = time.time()
 
-#original test images
-test_imgs_orig = imgs_test
-full_img_height = test_imgs_orig.shape[2]
-full_img_width = test_imgs_orig.shape[3]
+        print("Working on " + input_image)
 
-#Images to patches:
-patches_imgs_test = None
-new_height = None
-new_width = None
-masks_test  = None
-patches_masks_test = None
-# average_mode = True
-# if average_mode == True:
-patches_imgs_test, new_height, new_width = get_data(
-    imgs_test = imgs_test,
-    patch_height = patch_height,
-    patch_width = patch_width,
-    stride_height = stride_height,
-    stride_width = stride_width
-)
+        img_test = get_image(PATH_INPUT + input_image)
 
-#Load model
+        ### get image sizes
+        # test_imgs_orig = img_test
+        full_img_height = img_test.shape[2]
+        full_img_width = img_test.shape[3]
+        print("Size: " + str(full_img_height) + "x" + str(full_img_width))
+
+        ### Images to patches:
+        patches_imgs_test = None
+        new_height = None
+        new_width = None
+        
+        patches_imgs_test, new_height, new_width = get_data(
+            imgs_test = img_test,
+            patch_height = patch_height,
+            patch_width = patch_width,
+            stride_height = stride_height,
+            stride_width = stride_width
+        )
+
+        ### Calculate the predictions
+        print ("Computing output...")
+        predictions = model.predict(patches_imgs_test, batch_size=32, verbose=2)
+        # print ( "predicted images size :")
+        # print ( predictions.shape)
+
+        ### Patches back to image
+        pred_patches = pred_to_imgs(predictions, patch_height, patch_width, "original")
+
+        pred_imgs = None
+        pred_imgs = recompone_overlap(pred_patches, new_height, new_width, stride_height, stride_width)        
+
+        pred_imgs = pred_imgs[:,:,0:full_img_height,0:full_img_width]
+
+        assert(pred_imgs.shape[0] == 1)
+
+        # N_predicted = pred_imgs.shape[0]
+        # group = 1
+
+        # Save predictions to files
+        # for i in range(int(N_predicted)):
+        pred_stripe = group_images(pred_imgs[:,:,:,:],1)
+        # file_name =  input_image
+        visualize(pred_stripe, "output/" + input_image[0:len(input_image)-4] + "_pred")
+
+        elapsed_time_image = time.time() - start_time_image
+        print ("Time consumed: " + str(int(elapsed_time_image)) + "s\n")
+
+
+list_input_images = get_list_files(PATH_INPUT)
+
+### Load model
 model = model_from_json(open(architechture_path).read())
 model.load_weights(model_path)
 
-#Calculate the predictions
-predictions = model.predict(patches_imgs_test, batch_size=32, verbose=2)
-
-# print ( "predicted images size :")
-# print ( predictions.shape)
-
-#===== Convert the prediction arrays in corresponding images
-pred_patches = pred_to_imgs(predictions, patch_height, patch_width, "original")
-
-pred_imgs = None
-
-# average_mode = True
-# if average_mode == True:
-pred_imgs = recompone_overlap(pred_patches, new_height, new_width, stride_height, stride_width)# predictions
-# else:
-#     pred_imgs = recompone(pred_patches,13,12)
-
-
-pred_imgs = pred_imgs[:,:,0:full_img_height,0:full_img_width]
-# print ( "pred imgs shape: " +str(pred_imgs.shape))
-
-assert(len(file_names) == pred_imgs.shape[0])
-
-N_predicted = pred_imgs.shape[0]
-# group = 1
-
-# Save predictions to files
-for i in range(int(N_predicted)):
-    pred_stripe = group_images(pred_imgs[i:i+1,:,:,:],1)
-    file_name =  file_names[i]
-    visualize(pred_stripe, "output/" + file_name[0:len(file_name)-4] + "_pred")
+predict_and_save(list_input_images, model)
 
 print ( "All done! Please check the output folder")

@@ -21,6 +21,7 @@ def rgb2gray(rgb):
 
 #group a set of images row per columns
 def group_images(data,per_row):
+    print("data.shape: " + str(data.shape))
     assert data.shape[0]%per_row==0
     assert (data.shape[1]==1 or data.shape[1]==3)
     data = np.transpose(data,(0,2,3,1))  #corect format for imshow
