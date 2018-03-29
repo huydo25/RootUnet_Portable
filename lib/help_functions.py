@@ -38,7 +38,7 @@ def group_images(data,per_row):
 
 
 #visualize image (as PIL image, NOT as matplotlib!)
-def visualize(data,filename):
+def visualize(data,filename,mode="png"):
     assert (len(data.shape)==3) #height*width*channels
     img = None
     if data.shape[2]==1:  #in case it is black and white
@@ -47,7 +47,8 @@ def visualize(data,filename):
         img = Image.fromarray(data.astype(np.uint8))   #the image is already 0-255
     else:
         img = Image.fromarray((data*255).astype(np.uint8))  #the image is between 0-1
-    img.save(filename + '.png')
+    # if mode == "png":
+    img.save(filename + '.' + mode)
     return img
 
 

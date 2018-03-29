@@ -220,7 +220,7 @@ def predict_and_save(list_input_images, model):
         # for i in range(int(N_predicted)):
         pred_stripe = group_images(pred_imgs[:,:,:,:],1)
         # file_name =  input_image
-        visualize(pred_stripe, "output/" + input_image[0:len(input_image)-4] + "_pred")
+        visualize(pred_stripe, "output/" + input_image[0:len(input_image)-4] + "_pred",mode="jpg")
 
         elapsed_time_image = time.time() - start_time_image
         print ("Time consumed: " + str(int(elapsed_time_image)) + "s\n")
