@@ -59,7 +59,7 @@ process.
 1. Put all the image into the **/input** directory.
 2. Run script to import pre-trained model and predict output.
 ```
-    python runme.py
+    python run.py
 ```
 3. Wait until process completed. Please check the output in the **/output** directory.
 
