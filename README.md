@@ -14,7 +14,7 @@ In this case, we used Anaconda for Python 3.6. If you haven't got Anaconda in yo
 
 Once Having Anaconda installed, run Anaconda Navigator and:
 * On tab **Environments** from the left-column of the program, choose **Import** at the bottom of the second column, and click on *Import new environment*
-* On line of **Specification File**, click on the button in the shape of folder and browse to the folder that you extracted the source code, choose the **root_unet_35.yml** (or **root_unet_35_GPU.yml** if it is available on your device) which contain all the needed package, then click on **Open**.
+* On line of **Specification File**, click on the button in the shape of folder and browse to the folder that you extracted the source code, choose the **root_unet_35.yml** (non_GPU version is not support yet) which contain all the needed package, then click on **Open**.
 * Now you can see the new environment named as *root_unet_35*. If there already exists an environment has same name, you have to use another name to continue.
 * Click to **Import** to create a virtual environment with all pakcages imported.
 * After completed, the new enviroment will be shown in the list of enviroments in the second collums of Anaconda navigator. Choose enviroment, then click on **Play** button and **Open Terminal**. Now you have a terminal in the virtual environment that you just created.
@@ -36,6 +36,11 @@ This command will create a empty environment for you. However, you are recommend
 ```
     conda create -n my_env python=3 anaconda=4
 ```
+To create an environment using **.yml** file, run:
+```
+    conda create -n my_env -f tensorflow.yml
+```
+
 After that, to activate your enviroment, run
 ```
     source activate my_env
