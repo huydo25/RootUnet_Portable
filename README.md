@@ -36,11 +36,6 @@ This command will create a empty environment for you. However, you are recommend
 ```
     conda create -n my_env python=3 anaconda=4
 ```
-To create an environment using **.yml** file, run:
-```
-    conda create -n my_env -f tensorflow.yml
-```
-
 After that, to activate your enviroment, run
 ```
     source activate my_env
