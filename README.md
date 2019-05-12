@@ -65,6 +65,10 @@ process.
 
 **Note**: If you run program on CPU, it will take minutes per image, depending on your CPU capacity. But if you run program on GPU, it only will take around 10 seconds per image, even shorter. 
 
-## 3. Optional
+## 3. Result
 
-Updating
+
+<p align="center">
+  <img src="https://github.com/huydo25/RootUnet_Portable/blob/master/input/26_5_12_TB2_30_600001.jpg" width="300"/>
+  <img src="https://github.com/huydo25/RootUnet_Portable/blob/master/output/26_5_12_TB2_30_600001_pred.jpg" width=300"/>
+</p>
